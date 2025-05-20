@@ -10,8 +10,8 @@ const App = () => {
       <Routes>
         <Route index element={<Home />}/>
         <Route element={<DashboardLayout />}>
-          <Route path="formatter1" element={<ExcelFormatter1 />}/>
-          <Route path="formatter2" element={<ExcelFormatter2 />}/>
+          <Route path="/formatter1" element={<ExcelFormatter1 />}/>
+          <Route path="/formatter2" element={<ExcelFormatter2 />}/>
         </Route>
       </Routes>
     </BrowserRouter>
