@@ -14,25 +14,28 @@ const CsvFormatter = () => {
   const { jsonData, reader } = useExcelFileReader()
 
   const allowedMetricRegex = /^\d{1,2}\/\d{1,2}\/\d{2}$/
+  const SPECIAL_KEY = "â€“"
 
   const allowedKeys = [
+    "organickeywords:1â€“3",
+    "organickeywords:4â€“10",
+    "organickeywords:11â€“20",
+    "organickeywords:21â€“50",
     "organickeywords:1–3", 
     "organickeywords:4–10", 
     "organickeywords:11–20", 
     "organickeywords:21–50",
     "organickeywords:51+",
-    "metric"
+    "date"
   ]
 
   const isValidMetricDate = (input: string) => allowedMetricRegex.test(input)
 
   function cleanJsonData(data: RowData[] | undefined) {
     if(!data) return;
-
     setIsConverting(true)
-
-    const filtered = data.filter((json) => "Metric" in json && isValidMetricDate(json.Metric as string))
-    
+    const filtered = data.filter((json) => "Date" in json && isValidMetricDate(json.Date as string))
+    console.log("Keys: ", filtered)
     const mapped = filtered.map((json) => {
       const mappedData: RowData = {}
 
@@ -42,8 +45,9 @@ const CsvFormatter = () => {
       })
 
       filteredKey.forEach((key) => {
-        if(key.trim().toLowerCase() === "metric") {
-          mappedData["Date"] = (json[key] as string).trim()
+        if(key.includes(SPECIAL_KEY)) {
+          const newKey: string = key.split(SPECIAL_KEY).join("-")
+          mappedData[newKey] =(json[key] as string).trim()
         }
         else {
           mappedData[key] = (json[key] as string).trim()
@@ -51,6 +55,8 @@ const CsvFormatter = () => {
       })
       return mappedData
     })
+
+    console.log(mapped)
 
     const aoa_data = transformToOAO(mapped)
 

@@ -8,7 +8,7 @@ const App = () => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route index element={<Home />}/>
+        <Route path="/" element={<Home />}/>
         <Route element={<DashboardLayout />}>
           <Route path="/formatter1" element={<ExcelFormatter1 />}/>
           <Route path="/formatter2" element={<ExcelFormatter2 />}/>
