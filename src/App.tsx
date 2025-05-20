@@ -127,8 +127,10 @@ function TransformLayer({ data, fileName, fileExtension }: TransformCardProp ) {
         if(key.toLocaleLowerCase() === "date") return 
         const newData = [
             formatDate(curr.Date as string), 
-            key.trim(), curr[key], 
-            transformRankingRange(key)
+            key.trim(), 
+            curr[key], 
+            transformRankingRange(key),
+            1
         ]
         acc.push(newData)
       })
@@ -136,7 +138,7 @@ function TransformLayer({ data, fileName, fileExtension }: TransformCardProp ) {
     }, [])
 
     const withHeader = [
-      ["Date", "Index", "Keywords", "Ranking Range"], 
+      ["Date", "Index", "Keywords", "Ranking Range", "Record Count"], 
       ...transformedData
     ]
 
