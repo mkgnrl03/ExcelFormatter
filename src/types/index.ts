@@ -13,3 +13,9 @@ export interface OutputExcelHeader {
   Keywords: string,
   "Ranking Range": string
 }
+
+export interface RowData {
+  [key: string]: string | number | boolean | Date | null | undefined;
+}
+
+export type ArrayOfData = string | number | boolean | Date | null | undefined
