@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import type { ChangeEvent } from 'react';
 import * as XLSX from 'xlsx';
-import type { OutputExcelHeader } from './types';
 import { Loader } from 'lucide-react';
 
 interface RowData {
@@ -58,8 +57,8 @@ const App = () => {
   };
   
   return (
-    <main className="bg-zinc-950 text-white w-screen h-[100vh] flex items-center justify-center">
-      <div className="bg-zinc-900 p-6 rounded h-fit min-w-96 flex flex-col gap-10">
+    <main className="bg-gray-100 w-screen h-[100vh] flex items-center justify-center">
+      <div className="bg-white shadow-md p-8 rounded h-fit min-w-96 flex flex-col gap-10">
         {
           data.length > 0 
             ? <TransformLayer data={data} fileName={fileName} fileExtension={fileExtension}/>
@@ -84,51 +83,142 @@ type TransformCardProp = {
   fileName: string | undefined,
   fileExtension: AllowedFileExtension
 }
+
+type ArrayOfData = string | number | boolean | Date | null | undefined
+
+type BookType = "csv" | "xls" | "xlsx"
+
 function TransformLayer({ data, fileName, fileExtension }: TransformCardProp ) {
  
-  const [transformedData, setTransformedData] = useState<OutputExcelHeader[]>([])
+  // const [transformedData, setTransformedData] = useState<OutputExcelHeader[]>([])
   const [newFileName, setNewFileName] = useState<string>("")
   const [isTransforming, setTransformStatus] = useState<boolean>(false)
+  const [outputData, setOutputData] = useState<Array<ArrayOfData[]>>([])
+  const [selectedBookType, setBookType] = useState<BookType>("csv")
+  const saveOptionsExtension: Array<BookType> = ["csv", "xls", "xlsx"] 
 
-  function handleExcelTransformation() {
+  // function handleExcelTransformation() {
+  //   setTransformStatus(true)
+  //   const transformed = data.reduce<Array<OutputExcelHeader>>((acc, curr) => {
+  //     Object.keys(curr).forEach((key: string) => {
+  //       if(key === "Date") return
+  //       const newData: OutputExcelHeader = {
+  //         Date: curr.Date?.toString().trim() as string,
+  //         Index: key.trim(),
+  //         Keywords: curr[key] as string,
+  //         "Ranking Range": `'${key.trim().split(" ").join("").slice(16)}'`
+  //       }
+  //       acc.push(newData)
+  //     })
+  //     return acc
+  //   }, [])
+  //   setTimeout(() => {
+  //     setTransformedData(transformed)
+  //     setTransformStatus(false)
+  //   }, 500)
+  // }
+
+  // function handleDownload() {
+  //   if(transformedData.length < 1) return
+
+  //   const worksheet = XLSX.utils.json_to_sheet(transformedData, {
+  //     cellDates: false
+  //   })
+  //   const workbook = XLSX.utils.book_new();
+
+  //   XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+
+  //   const csvOutput = XLSX.write(workbook, {
+  //     bookType: 'csv',
+  //     type: 'binary'
+  //   });
+
+  //   // Convert binary string to Blob
+  //   const blob = new Blob([s2ab(csvOutput)], { type: 'text/csv;charset=utf-8;' });
+
+  //   // Create a link to download
+  //   const url = window.URL.createObjectURL(blob);
+  //   const link = document.createElement('a');
+  //   link.href = url;
+  //   link.setAttribute('download', newFileName);
+  //   document.body.appendChild(link);
+  //   link.click();
+  //   document.body.removeChild(link);
+  // }
+
+  function formatDate(toFormat: string) {
+      const date = new Date(toFormat);
+      
+      if (isNaN(date.getTime())) {
+        return toFormat
+      }
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+      const year = date.getFullYear();
+      
+      return `${month}/${day}/${year}`;
+  }
+
+  function transformRankingRange(range: string){
+    const extractedRange = 
+      range
+        .trim()
+        .split(" ")
+        .join("")
+        .slice(16)
+
+    return `'${extractedRange}'`
+  }
+
+  function transfromDataToAOA(){
     setTransformStatus(true)
-    const transformed = data.reduce<Array<OutputExcelHeader>>((acc, curr) => {
-      Object.keys(curr).forEach((key: string) => {
-        if(key === "Date") return
-        const newData: OutputExcelHeader = {
-          Date: curr.Date?.toString().trim() as string,
-          Index: key.trim(),
-          Keywords: curr[key] as string,
-          "Ranking Range": `'${key.trim().split(" ").join("").slice(16)}'`
-        }
+    const transformedData = data.reduce<Array<ArrayOfData[]>>((acc, curr) => {
+      Object.keys(curr).forEach((key) => {
+        if(key.toLocaleLowerCase() === "date") return 
+        const newData = [
+            formatDate(curr.Date as string), 
+            key.trim(), curr[key], 
+            transformRankingRange(key)
+        ]
         acc.push(newData)
       })
-
       return acc
     }, [])
+
+    const withHeader = [
+      ["Date", "Index", "Keywords", "Ranking Range"], 
+      ...transformedData
+    ]
+
     setTimeout(() => {
-      setTransformedData(transformed)
+      setOutputData(withHeader)
       setTransformStatus(false)
     }, 500)
   }
 
-  function handleDownload() {
-    if(transformedData.length < 1) return
+  const s2ab = (s: string) => {
+    const buf = new ArrayBuffer(s.length);      // Create buffer of same length
+    const view = new Uint8Array(buf);           // Create typed array view
+    for (let i = 0; i < s.length; i++) {
+      view[i] = s.charCodeAt(i) & 0xFF;         // Get byte value for each character
+    }
+    return buf;                                 // Return ArrayBuffer
+  };
 
-    const worksheet = XLSX.utils.json_to_sheet(transformedData)
-    const workbook = XLSX.utils.book_new();
+  function handleSheetExportAOA(){
+    const ws = XLSX.utils.aoa_to_sheet(outputData)
 
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+    const workbook = XLSX.utils.book_new()
+    
+    XLSX.utils.book_append_sheet(workbook, ws, "Sheet 1")
 
     const csvOutput = XLSX.write(workbook, {
-      bookType: 'csv',
+      bookType: selectedBookType,
       type: 'binary'
     });
 
-    // Convert binary string to Blob
-    const blob = new Blob([s2ab(csvOutput)], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob([s2ab(csvOutput)], { type: `text/${selectedBookType};charset=utf-8;` });
 
-    // Create a link to download
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
@@ -137,16 +227,6 @@ function TransformLayer({ data, fileName, fileExtension }: TransformCardProp ) {
     link.click();
     document.body.removeChild(link);
   }
-
- const s2ab = (s: string) => {
-  const buf = new ArrayBuffer(s.length);      // Create buffer of same length
-  const view = new Uint8Array(buf);           // Create typed array view
-  for (let i = 0; i < s.length; i++) {
-    view[i] = s.charCodeAt(i) & 0xFF;         // Get byte value for each character
-  }
-  console.log(buf)
-  return buf;                                 // Return ArrayBuffer
-};
 
   const fileIcons = {
     csv: "./src/assets/icons/csv.png",
@@ -159,7 +239,7 @@ function TransformLayer({ data, fileName, fileExtension }: TransformCardProp ) {
 
   return(
     <div className='flex flex-col gap-4'>
-       <h1 className='text-xl font-semibold tracking-wide'>Transform File</h1>
+       <h1 className='text-xl font-semibold'>Convert File</h1>
         <div className='flex items-center justify-start gap-3 text-sm border border-dashed border-gray-500 p-3 rounded '>
           <img 
             src={fileIcon} 
@@ -172,40 +252,68 @@ function TransformLayer({ data, fileName, fileExtension }: TransformCardProp ) {
           </div>
         </div>
         <button 
-          className='font-semibold bg-blue-500 w-full flex gap-2 items-center justify-center p-2 rounded disabled:opacity-50 disabled:hover:cursor-not-allowed'
-          onClick={handleExcelTransformation}
-          disabled={transformedData.length > 0} 
+          className='font-semibold text-white bg-blue-500 w-full flex gap-2 items-center justify-center p-2 rounded disabled:opacity-50 disabled:hover:cursor-not-allowed'
+          onClick={transfromDataToAOA}
+          disabled={outputData.length > 0} 
         >
           {
             isTransforming && <Loader className='animate-spin'/>
           }
-          Transform
+          Convert
         </button>
         <hr 
           className='text-zinc-500 my-3'
         />
 
         {
-          transformedData.length > 0 && <>
+          outputData.length > 0 && <>
                <div className='flex flex-col gap-3'>
-                <label htmlFor="file-name">Provide a name of the file: </label>
-                <input 
-                  type="text" 
-                  name='file-name'
-                  onChange={(e) => setNewFileName(e.target.value)}
-                  className='border rounded p-2 text-sm'
-                />
+                <h2 className='text-xl font-semibold'>Download Your File</h2>
 
-                {
-                  newFileName && <>
-                    <button 
-                        className='font-semibold bg-blue-500 w-full flex items-center justify-center p-2 rounded'
-                        onClick={handleDownload}  
-                      >
-                        Download
-                    </button>
-                  </>
-                }
+                  <label 
+                    htmlFor="file-name"
+                    className="font-semibold text-sm"
+                  >Name you file (minimum to 5 letters) </label>
+                  <input 
+                    type="text" 
+                    name='file-name'
+                    onChange={(e) => setNewFileName(e.target.value)}
+                    className={`border rounded p-2 text-sm outline-0
+                      ${newFileName.length < 5 ? 'border-red-500' : 'border-black'}  
+                    `}
+                  />
+
+        
+                <div className='flex items-center justify-start gap-6 '>
+                  <label 
+                    htmlFor="save-as"
+                    className="font-semibold text-sm"
+                  >Save as: </label>
+                  <select 
+                    name="save-as" 
+                    id="save-as"
+                    defaultValue={selectedBookType}
+                    className='w-fit border rounded py-1 px-2'
+                    onChange={(e) => {
+                      setBookType(e.target.value as BookType)
+                    }}
+                  >
+                      {
+                        saveOptionsExtension.map((ex) => (
+                          <option value={ex} key={ex}>.{ex}</option>
+                        ))
+                      }
+                  </select>
+                </div>
+
+                <button 
+                    className='disabled:opacity-50 font-semibold text-white bg-blue-500 w-full flex items-center justify-center p-2 rounded'
+                    onClick={handleSheetExportAOA}
+                    disabled={newFileName.length < 5}  
+                  >
+                    Download
+                </button>
+                
               </div>
           </>
         }
