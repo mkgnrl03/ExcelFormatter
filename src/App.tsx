@@ -90,61 +90,11 @@ type BookType = "csv" | "xls" | "xlsx"
 
 function TransformLayer({ data, fileName, fileExtension }: TransformCardProp ) {
  
-  // const [transformedData, setTransformedData] = useState<OutputExcelHeader[]>([])
   const [newFileName, setNewFileName] = useState<string>("")
   const [isTransforming, setTransformStatus] = useState<boolean>(false)
   const [outputData, setOutputData] = useState<Array<ArrayOfData[]>>([])
   const [selectedBookType, setBookType] = useState<BookType>("csv")
   const saveOptionsExtension: Array<BookType> = ["csv", "xls", "xlsx"] 
-
-  // function handleExcelTransformation() {
-  //   setTransformStatus(true)
-  //   const transformed = data.reduce<Array<OutputExcelHeader>>((acc, curr) => {
-  //     Object.keys(curr).forEach((key: string) => {
-  //       if(key === "Date") return
-  //       const newData: OutputExcelHeader = {
-  //         Date: curr.Date?.toString().trim() as string,
-  //         Index: key.trim(),
-  //         Keywords: curr[key] as string,
-  //         "Ranking Range": `'${key.trim().split(" ").join("").slice(16)}'`
-  //       }
-  //       acc.push(newData)
-  //     })
-  //     return acc
-  //   }, [])
-  //   setTimeout(() => {
-  //     setTransformedData(transformed)
-  //     setTransformStatus(false)
-  //   }, 500)
-  // }
-
-  // function handleDownload() {
-  //   if(transformedData.length < 1) return
-
-  //   const worksheet = XLSX.utils.json_to_sheet(transformedData, {
-  //     cellDates: false
-  //   })
-  //   const workbook = XLSX.utils.book_new();
-
-  //   XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
-
-  //   const csvOutput = XLSX.write(workbook, {
-  //     bookType: 'csv',
-  //     type: 'binary'
-  //   });
-
-  //   // Convert binary string to Blob
-  //   const blob = new Blob([s2ab(csvOutput)], { type: 'text/csv;charset=utf-8;' });
-
-  //   // Create a link to download
-  //   const url = window.URL.createObjectURL(blob);
-  //   const link = document.createElement('a');
-  //   link.href = url;
-  //   link.setAttribute('download', newFileName);
-  //   document.body.appendChild(link);
-  //   link.click();
-  //   document.body.removeChild(link);
-  // }
 
   function formatDate(toFormat: string) {
       const date = new Date(toFormat);
@@ -167,7 +117,7 @@ function TransformLayer({ data, fileName, fileExtension }: TransformCardProp ) {
         .join("")
         .slice(16)
 
-    return `'${extractedRange}'`
+    return `'${extractedRange}`
   }
 
   function transfromDataToAOA(){
