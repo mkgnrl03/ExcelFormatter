@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import type { ChangeEvent } from 'react';
 import * as XLSX from 'xlsx';
 import { Loader } from 'lucide-react';
