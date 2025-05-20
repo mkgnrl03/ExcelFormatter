@@ -179,10 +179,10 @@ function TransformLayer({ data, fileName, fileExtension }: TransformCardProp ) {
   }
 
   const fileIcons = {
-    csv: "./src/assets/icons/csv.png",
-    xls: "./src/assets/icons/xls.png",
-    xlsx: "./assets/icons/xls.png",
-    default: "./src/assets/icons/csv.png"
+    csv: "/images/icons/csv.png",
+    xls: "/images/icons/xls.png",
+    xlsx: "/images/icons/xls.png",
+    default: "/images/icons/csv.png"
   }
   
   const fileIcon = fileIcons[fileExtension]
