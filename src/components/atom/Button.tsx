@@ -1,18 +1,19 @@
 import { Loader } from "lucide-react";
 
 type ButtonProp = {
-  name: string,
-  handler: () => void,
-  isDisabled: boolean,
-  isLoading: boolean,
+  name?: string,
+  handler?: () => void,
+  isDisabled?: boolean,
+  isLoading?: boolean,
   children?: React.ReactNode
 }
 const Button = (prop: ButtonProp) => {
   return (
     <button 
       className={`
+        cursor-pointer
         disabled:opacity-50 disabled:bg-gray-500 disabled:cursor-not-allowed 
-      text-white bg-blue-500 w-full flex items-center justify-center gap-1 py-2 px-6 rounded
+      text-white bg-primary w-full flex items-center justify-center gap-1 py-2 px-6 rounded
       `}
       onClick={prop.handler}
       disabled={prop.isDisabled || prop.isLoading}  

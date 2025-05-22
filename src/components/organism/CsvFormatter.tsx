@@ -104,7 +104,7 @@ const CsvFormatter = () => {
 
         <input type="file" id="input-file"
           className="border w-fit rounded px-4 py-2 text-sm"
-          onChange={reader}
+         onChange={(event) => reader(event.target.files?.[0])}
         />
 
         <div className="flex gap-2 w-fit">

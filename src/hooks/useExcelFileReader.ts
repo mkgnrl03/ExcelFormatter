@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent } from "react";
+import { useState } from "react";
 import * as XLSX from 'xlsx';
 import type { RowData } from "../types";
 
@@ -12,12 +12,12 @@ export default function useExcelFileReader(){
   const [error, setError] = useState<string | undefined>()
   const [jsonData, setJsonData] = useState<Array<RowData>>()
 
-  function reader(event: ChangeEvent<HTMLInputElement>) {
-    const targetFile = event.target.files?.[0];
+  function reader(targetFile: globalThis.File | null | undefined) {
     if (!targetFile) {
       setError("No file found.")
       return
     }
+
     const filename = targetFile.name.split(".")
     const tempFileName: File = {
       name: filename[0],
